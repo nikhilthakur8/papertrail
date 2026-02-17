@@ -14,13 +14,12 @@ import { Input } from '@/components/ui/input';
 import { 
   User, 
   LogOut, 
-  Mail, 
   CheckCircle2, 
   AlertCircle, 
   Loader2,
-  ShieldCheck,
-  ChevronDown
+  ChevronDown,
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface UserMenuProps {
   onLogout: () => void;
@@ -36,7 +35,6 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout }) => {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [countdown, setCountdown] = useState(0);
 
-  // Countdown timer for resend
   useEffect(() => {
     if (countdown > 0) {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
@@ -51,11 +49,12 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout }) => {
       await authAPI.sendOtp();
       setOtpSent(true);
       setCountdown(60);
-      setMessage({ type: 'success', text: 'OTP sent to your email!' });
-    } catch (error: any) {
+      setMessage({ type: 'success', text: 'Verification code sent to your email.' });
+    } catch (error: unknown) {
+      const err = error as any;
       setMessage({ 
         type: 'error', 
-        text: error.response?.data?.message || 'Failed to send OTP' 
+        text: err.response?.data?.message || 'Failed to send code.' 
       });
     } finally {
       setIsLoading(false);
@@ -64,7 +63,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout }) => {
 
   const handleVerifyOtp = async () => {
     if (otp.length !== 6) {
-      setMessage({ type: 'error', text: 'Please enter a 6-digit OTP' });
+      setMessage({ type: 'error', text: 'Enter 6-digit code.' });
       return;
     }
 
@@ -73,23 +72,19 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout }) => {
     try {
       const response = await authAPI.verifyOtp(otp);
       updateUser(response.data.user);
-      setMessage({ type: 'success', text: 'Email verified successfully!' });
+      setMessage({ type: 'success', text: 'Email verified!' });
       setShowVerification(false);
       setOtp('');
       setOtpSent(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as any;
       setMessage({ 
         type: 'error', 
-        text: error.response?.data?.message || 'Invalid OTP' 
+        text: err.response?.data?.message || 'Invalid code.' 
       });
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleResendOtp = async () => {
-    if (countdown > 0) return;
-    await handleSendOtp();
   };
 
   const resetVerification = () => {
@@ -102,76 +97,59 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout }) => {
   return (
     <DropdownMenu open={isOpen} onOpenChange={(open) => {
       setIsOpen(open);
-      if (!open) {
-        resetVerification();
-      }
+      if (!open) resetVerification();
     }}>
       <DropdownMenuTrigger asChild>
-        <Button variant="none" className="flex items-center gap-2 px-3 hover:bg-none">
-          <div className="relative">
-            <User className="h-4 w-4" />
-            {!user?.isEmailVerified && (
-              <span className="absolute -top-1 -right-1 h-2 w-2 bg-amber-500 rounded-full" />
-            )}
+        <button className="flex items-center gap-2 group outline-none">
+          <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center border border-zinc-700 group-hover:bg-zinc-700 transition-colors">
+            <User className="h-4 w-4 text-zinc-400" />
           </div>
-          <span className="hidden sm:inline max-w-[150px] truncate">{user?.name}</span>
-          <ChevronDown className="h-3 w-3 text-muted-foreground" />
-        </Button>
+          <span className="text-sm font-medium text-zinc-300 hidden sm:inline">{user?.name}</span>
+          <ChevronDown className="h-4 w-4 text-zinc-500" />
+        </button>
       </DropdownMenuTrigger>
       
-      <DropdownMenuContent align="end" className="w-72">
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user?.name}</p>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Mail className="h-3 w-3" />
+      <DropdownMenuContent align="end" className="w-64 bg-zinc-900 border-zinc-800 rounded-xl p-1 mt-2 shadow-xl">
+        <DropdownMenuLabel className="p-3">
+          <div className="flex flex-col gap-1">
+            <p className="text-sm font-semibold text-white">{user?.name}</p>
+            <div className="flex items-center gap-2 text-xs text-zinc-500">
               <span className="truncate">{user?.email}</span>
               {user?.isEmailVerified ? (
-                <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                <CheckCircle2 className="h-3 w-3 text-green-500" />
               ) : (
-                <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                <AlertCircle className="h-3 w-3 text-amber-500" />
               )}
             </div>
           </div>
         </DropdownMenuLabel>
         
-        <DropdownMenuSeparator />
+        <DropdownMenuSeparator className="bg-zinc-800" />
 
-        {/* Email Verification Section */}
         {!user?.isEmailVerified && (
-          <>
+          <div className="p-1">
             {!showVerification ? (
               <DropdownMenuItem 
                 onSelect={(e) => {
                   e.preventDefault();
                   setShowVerification(true);
                 }}
-                className="cursor-pointer"
+                className="cursor-pointer rounded-lg focus:bg-zinc-800 text-amber-500"
               >
-                <ShieldCheck className="h-4 w-4 mr-2 text-amber-500" />
                 <span>Verify Email</span>
-                <span className="ml-auto text-xs text-amber-500">Not verified</span>
               </DropdownMenuItem>
             ) : (
-              <div className="p-3 space-y-3">
+              <div className="p-3 space-y-3 bg-zinc-950/50 rounded-lg border border-zinc-800">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Verify your email</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 px-2 text-xs"
-                    onClick={resetVerification}
-                  >
-                    Cancel
-                  </Button>
+                  <span className="text-[11px] font-medium text-zinc-400">Email Verification</span>
+                  <button onClick={resetVerification} className="text-[11px] text-zinc-600 hover:text-white transition-colors">Cancel</button>
                 </div>
 
                 {message && (
-                  <div className={`text-xs px-2 py-1.5 rounded ${
-                    message.type === 'success' 
-                      ? 'bg-green-500/10 text-green-500' 
-                      : 'bg-red-500/10 text-red-500'
-                  }`}>
+                  <div className={cn(
+                    "text-[10px] px-2 py-1.5 rounded font-medium",
+                    message.type === 'success' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'
+                  )}>
                     {message.text}
                   </div>
                 )}
@@ -179,83 +157,48 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout }) => {
                 {!otpSent ? (
                   <Button
                     size="sm"
-                    className="w-full"
+                    className="w-full h-8 text-xs"
                     onClick={handleSendOtp}
                     disabled={isLoading}
                   >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="h-3 w-3 mr-2 animate-spin" />
-                        Sending...
-                      </>
-                    ) : (
-                      <>
-                        <Mail className="h-3 w-3 mr-2" />
-                        Send OTP
-                      </>
-                    )}
+                    {isLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : "Send Code"}
                   </Button>
                 ) : (
                   <div className="space-y-2">
                     <Input
                       type="text"
-                      placeholder="6-digit verification code"
+                      placeholder="6-digit code"
                       value={otp}
                       onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                      className="h-8 text-center text-lg tracking-widest"
+                      className="h-8 bg-zinc-900 border-zinc-800 text-center text-sm font-mono tracking-widest text-white"
                       maxLength={6}
                     />
                     <Button
                       size="sm"
-                      className="w-full"
+                      className="w-full h-8 text-xs"
                       onClick={handleVerifyOtp}
                       disabled={isLoading || otp.length !== 6}
                     >
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="h-3 w-3 mr-2 animate-spin" />
-                          Verifying...
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle2 className="h-3 w-3 mr-2" />
-                          Verify OTP
-                        </>
-                      )}
+                      {isLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : "Verify"}
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full text-xs"
-                      onClick={handleResendOtp}
+                    <button
+                      className="w-full text-[10px] text-zinc-500 hover:text-white disabled:opacity-50"
+                      onClick={() => !countdown && handleSendOtp()}
                       disabled={countdown > 0 || isLoading}
                     >
-                      {countdown > 0 
-                        ? `Resend OTP in ${countdown}s` 
-                        : 'Resend OTP'}
-                    </Button>
+                      {countdown > 0 ? `Resend in ${countdown}s` : 'Resend Code'}
+                    </button>
                   </div>
                 )}
               </div>
             )}
-            <DropdownMenuSeparator />
-          </>
+            <DropdownMenuSeparator className="bg-zinc-800" />
+          </div>
         )}
 
-        {/* Verified Badge */}
-        {user?.isEmailVerified && (
-          <>
-            <div className="px-2 py-1.5 flex items-center gap-2 text-sm text-green-500">
-              <CheckCircle2 className="h-4 w-4" />
-              <span>Email Verified</span>
-            </div>
-            <DropdownMenuSeparator />
-          </>
-        )}
-
-        <DropdownMenuItem onClick={onLogout} className="cursor-pointer text-red-500 focus:text-red-500 focus:!bg-transparent">
+        <DropdownMenuItem onClick={onLogout} className="cursor-pointer text-red-400 focus:text-red-400 focus:bg-red-500/5 rounded-lg p-2.5">
           <LogOut className="h-4 w-4 mr-2" />
-          <span>Logout</span>
+          <span className="text-sm">Sign out</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

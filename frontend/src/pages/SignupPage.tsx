@@ -23,8 +23,8 @@ const SignupPage: React.FC = () => {
     
     if (!name || !email || !password || !confirmPassword) {
       toast({
-        title: 'Validation Error',
-        description: 'Please fill in all fields',
+        title: 'Form Incomplete',
+        description: 'Please fill in all required fields.',
         variant: 'destructive',
       });
       return;
@@ -32,8 +32,8 @@ const SignupPage: React.FC = () => {
 
     if (password !== confirmPassword) {
       toast({
-        title: 'Validation Error',
-        description: 'Passwords do not match',
+        title: 'Password Mismatch',
+        description: 'Passwords do not match.',
         variant: 'destructive',
       });
       return;
@@ -41,8 +41,8 @@ const SignupPage: React.FC = () => {
 
     if (password.length < 6) {
       toast({
-        title: 'Validation Error',
-        description: 'Password must be at least 6 characters',
+        title: 'Complexity Error',
+        description: 'Password must be at least 6 characters.',
         variant: 'destructive',
       });
       return;
@@ -52,14 +52,15 @@ const SignupPage: React.FC = () => {
     try {
       await signup(name, email, password);
       toast({
-        title: 'Account Created',
+        title: 'Success',
         description: 'Welcome to PaperTrail!',
       });
       navigate('/library');
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as any;
       toast({
-        title: 'Signup Failed',
-        description: error.response?.data?.message || 'Could not create account',
+        title: 'Registration Failed',
+        description: err.response?.data?.message || 'Could not create account.',
         variant: 'destructive',
       });
     } finally {
@@ -68,97 +69,97 @@ const SignupPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="flex items-center justify-center gap-2 mb-6 sm:mb-8">
-          <BookOpen className="h-10 w-10 sm:h-12 sm:w-12 text-primary" />
-          <span className="text-3xl sm:text-4xl font-bold text-foreground">
-            Paper<span className="text-primary">Trail</span>
-          </span>
+    <div className="min-h-screen flex items-center justify-center bg-[#0a0a0b] p-4 font-sans">
+      <div className="w-full max-w-md animate-in fade-in zoom-in-95 duration-500 flex flex-col items-center">
+        {/* Logo Section */}
+        <div className="flex items-center gap-3 mb-8">
+          <BookOpen className="h-10 w-10 text-primary" />
+          <h1 className="text-3xl font-bold text-white tracking-tight">Paper Trail</h1>
         </div>
 
-        <Card className="border-border">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-xl sm:text-2xl text-center">Create Account</CardTitle>
-            <CardDescription className="text-center text-sm">
-              Join PaperTrail to start tracking your research papers
+        <Card className="w-full bg-zinc-900 border-zinc-800 shadow-2xl rounded-2xl overflow-hidden">
+          <CardHeader className="space-y-1 pb-4 pt-6 text-center border-b border-zinc-800/50">
+            <CardTitle className="text-xl font-bold text-white">Create Account</CardTitle>
+            <CardDescription className="text-zinc-500 text-xs">
+              Start tracking your research today
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <CardContent className="space-y-4 pt-6">
+              <div className="space-y-1.5">
+                <Label htmlFor="name" className="text-sm sm:text-base font-medium text-zinc-400 ml-1">Full Name</Label>
+                <div className="relative group">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-600 group-focus-within:text-primary transition-colors" />
                   <Input
                     id="name"
                     type="text"
-                    placeholder="Enter your full name"
+                    placeholder="John Doe"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 bg-zinc-950/50 border-zinc-800 h-12 text-zinc-200 placeholder:text-zinc-700 rounded-xl text-sm sm:text-base"
                     disabled={isLoading}
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-sm sm:text-base font-medium text-zinc-400 ml-1">Email</Label>
+                <div className="relative group">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-600 group-focus-within:text-primary transition-colors" />
                   <Input
                     id="email"
                     type="email"
-                    placeholder="yourname@gmail.com"
+                    placeholder="name@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 bg-zinc-950/50 border-zinc-800 h-12 text-zinc-200 placeholder:text-zinc-700 rounded-xl text-sm sm:text-base"
                     disabled={isLoading}
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="Secure password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10"
-                    disabled={isLoading}
-                  />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="password" className="text-sm sm:text-base font-medium text-zinc-400 ml-1">Password</Label>
+                  <div className="relative group">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-600 group-focus-within:text-primary transition-colors" />
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pl-10 bg-zinc-950/50 border-zinc-800 h-12 text-zinc-200 placeholder:text-zinc-700 rounded-xl text-sm sm:text-base"
+                      disabled={isLoading}
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    placeholder="Confirm your password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="pl-10"
-                    disabled={isLoading}
-                  />
+                <div className="space-y-1.5">
+                  <Label htmlFor="confirmPassword" className="text-sm sm:text-base font-medium text-zinc-400 ml-1">Confirm</Label>
+                  <div className="relative group">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-600 group-focus-within:text-primary transition-colors" />
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      placeholder="••••••••"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="pl-10 bg-zinc-950/50 border-zinc-800 h-12 text-zinc-200 placeholder:text-zinc-700 rounded-xl text-sm sm:text-base"
+                      disabled={isLoading}
+                    />
+                  </div>
                 </div>
               </div>
             </CardContent>
-            <CardFooter className="flex flex-col gap-4">
+            <CardFooter className="flex flex-col gap-4 pb-6 pt-2 px-8">
               <Button 
                 type="submit" 
-                className="w-full" 
+                className="w-full h-11 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/10 transition-all active:scale-[0.98] text-sm sm:text-base" 
                 disabled={isLoading}
               >
-                {isLoading ? 'Creating Account...' : 'Create Account'}
+                {isLoading ? 'Processing...' : 'Sign Up'}
               </Button>
-              <p className="text-sm text-muted-foreground text-center">
-                Already have an account?{' '}
-                <Link to="/login" className="text-primary hover:underline">
+              <p className="text-sm sm:text-base text-zinc-500 text-center">
+                Already registered?{' '}
+                <Link to="/login" className="text-primary font-bold hover:underline">
                   Sign in
                 </Link>
               </p>

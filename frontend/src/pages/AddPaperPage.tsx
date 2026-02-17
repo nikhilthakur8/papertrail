@@ -5,49 +5,30 @@ import { RESEARCH_DOMAINS, READING_STAGES, IMPACT_SCORES } from '@/lib/constants
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
 import Layout from '@/components/Layout';
-import { FileText, User, Layers, BookMarked, Quote, Star, Calendar, PlusCircle } from 'lucide-react';
+import { PlusCircle, User, BarChart, FileText } from 'lucide-react';
 
 const AddPaperPage: React.FC = () => {
-  const [formData, setFormData] = useState({
-    title: '',
-    firstAuthor: '',
-    researchDomain: '',
-    readingStage: '',
-    citationCount: '',
-    impactScore: '',
-    dateAdded: new Date().toISOString().split('T')[0],
-  });
+  const [title, setTitle] = useState('');
+  const [firstAuthor, setFirstAuthor] = useState('');
+  const [researchDomain, setResearchDomain] = useState(RESEARCH_DOMAINS[0]);
+  const [readingStage, setReadingStage] = useState(READING_STAGES[0]);
+  const [citationCount, setCitationCount] = useState('0');
+  const [impactScore, setImpactScore] = useState(IMPACT_SCORES[1]); // Medium Impact default
   const [isLoading, setIsLoading] = useState(false);
+  
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validation
-    if (!formData.title || !formData.firstAuthor || !formData.researchDomain || 
-        !formData.readingStage || formData.citationCount === '' || !formData.impactScore) {
+    if (!title || !firstAuthor) {
       toast({
-        title: 'Validation Error',
-        description: 'All fields are required',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    const citationCount = parseInt(formData.citationCount);
-    if (isNaN(citationCount) || citationCount < 0) {
-      toast({
-        title: 'Validation Error',
-        description: 'Citation count must be a valid positive number',
+        title: 'Missing Information',
+        description: 'Please provide at least a title and author.',
         variant: 'destructive',
       });
       return;
@@ -56,25 +37,24 @@ const AddPaperPage: React.FC = () => {
     setIsLoading(true);
     try {
       await papersAPI.create({
-        title: formData.title,
-        firstAuthor: formData.firstAuthor,
-        researchDomain: formData.researchDomain,
-        readingStage: formData.readingStage,
-        citationCount,
-        impactScore: formData.impactScore,
-        dateAdded: formData.dateAdded,
+        title,
+        firstAuthor,
+        researchDomain,
+        readingStage,
+        citationCount: parseInt(citationCount) || 0,
+        impactScore,
       });
       
       toast({
-        title: 'Paper Added',
-        description: 'Your research paper has been added successfully!',
+        title: 'Success',
+        description: 'New paper added to your library.',
       });
-      
       navigate('/library');
-    } catch (error: any) {
+    } catch (error) {
+      console.error(error);
       toast({
         title: 'Error',
-        description: error.response?.data?.message || 'Failed to add paper',
+        description: 'Failed to add the paper. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -84,189 +64,132 @@ const AddPaperPage: React.FC = () => {
 
   return (
     <Layout>
-      <div className="max-w-2xl mx-auto">
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground flex items-center gap-2 sm:gap-3">
-            <PlusCircle className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
-            Add Research Paper
-          </h1>
-          <p className="text-sm sm:text-base text-muted-foreground mt-2">
-            Track a new research paper by filling in the details below
-          </p>
+      <div className="max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="flex items-center gap-4 mb-8">
+           <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+              <PlusCircle className="h-6 w-6 text-primary" />
+           </div>
+           <div>
+              <h1 className="text-3xl font-bold text-white tracking-tight">Add New Paper</h1>
+              <p className="text-zinc-500 text-sm">Log a new research paper into your collection.</p>
+           </div>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Paper Details</CardTitle>
-            <CardDescription>
-              All fields are required to add a paper to your library
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Paper Title */}
-              <div className="space-y-2">
-                <Label htmlFor="title" className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-primary" />
-                  Paper Title
-                </Label>
+        <form onSubmit={handleSubmit} className="space-y-8 bg-zinc-900/40 border border-zinc-800 p-8 rounded-2xl">
+          <div className="space-y-6">
+            <div className="space-y-2.5">
+              <Label htmlFor="title" className="text-sm sm:text-base font-bold text-zinc-400 ml-1">Paper Title</Label>
+              <div className="relative group">
+                <FileText className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-600 group-focus-within:text-primary transition-colors" />
                 <Input
                   id="title"
-                  placeholder="Write the paper title here..."
-                  value={formData.title}
-                  onChange={(e) => handleInputChange('title', e.target.value)}
+                  placeholder="The impact of AI on research..."
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="pl-12 bg-zinc-950/50 border-zinc-800 h-12 text-zinc-200 placeholder:text-zinc-700 rounded-xl text-sm sm:text-base"
                   disabled={isLoading}
                 />
               </div>
+            </div>
 
-              {/* First Author */}
-              <div className="space-y-2">
-                <Label htmlFor="firstAuthor" className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-primary" />
-                  First Author Name
-                </Label>
-                <Input
-                  id="firstAuthor"
-                  placeholder="Name of the lead researcher"
-                  value={formData.firstAuthor}
-                  onChange={(e) => handleInputChange('firstAuthor', e.target.value)}
-                  disabled={isLoading}
-                />
-              </div>
-
-              {/* Two columns for domain and stage */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Research Domain */}
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
-                    <Layers className="h-4 w-4 text-primary" />
-                    Research Domain
-                  </Label>
-                  <Select
-                    value={formData.researchDomain}
-                    onValueChange={(value) => handleInputChange('researchDomain', value)}
-                    disabled={isLoading}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pick a research area" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {RESEARCH_DOMAINS.map((domain) => (
-                        <SelectItem key={domain} value={domain}>
-                          {domain}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Reading Stage */}
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
-                    <BookMarked className="h-4 w-4 text-primary" />
-                    Reading Stage
-                  </Label>
-                  <Select
-                    value={formData.readingStage}
-                    onValueChange={(value) => handleInputChange('readingStage', value)}
-                    disabled={isLoading}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Current progress level" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {READING_STAGES.map((stage) => (
-                        <SelectItem key={stage} value={stage}>
-                          {stage}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Two columns for citations and impact */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Citation Count */}
-                <div className="space-y-2">
-                  <Label htmlFor="citationCount" className="flex items-center gap-2">
-                    <Quote className="h-4 w-4 text-primary" />
-                    Citation Count
-                  </Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2.5">
+                <Label htmlFor="author" className="text-sm sm:text-base font-bold text-zinc-400 ml-1">First Author</Label>
+                <div className="relative group">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-600 group-focus-within:text-primary transition-colors" />
                   <Input
-                    id="citationCount"
-                    type="number"
-                    min="0"
-                    placeholder="Total citations"
-                    value={formData.citationCount}
-                    onChange={(e) => handleInputChange('citationCount', e.target.value)}
+                    id="author"
+                    placeholder="Principal investigator"
+                    value={firstAuthor}
+                    onChange={(e) => setFirstAuthor(e.target.value)}
+                    className="pl-12 bg-zinc-950/50 border-zinc-800 h-12 text-zinc-200 placeholder:text-zinc-700 rounded-xl text-sm sm:text-base"
                     disabled={isLoading}
                   />
                 </div>
+              </div>
 
-                {/* Impact Score */}
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
-                    <Star className="h-4 w-4 text-primary" />
-                    Impact Score
-                  </Label>
-                  <Select
-                    value={formData.impactScore}
-                    onValueChange={(value) => handleInputChange('impactScore', value)}
+              <div className="space-y-2.5">
+                <Label className="text-sm sm:text-base font-bold text-zinc-400 ml-1">Research Domain</Label>
+                <Select value={researchDomain} onValueChange={(v) => setResearchDomain(v as any)}>
+                  <SelectTrigger className="bg-zinc-950/50 border-zinc-800 h-12 text-zinc-200 rounded-xl outline-none text-sm sm:text-base">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+                    {RESEARCH_DOMAINS.map((domain) => (
+                      <SelectItem key={domain} value={domain} className="text-sm sm:text-base">{domain}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="space-y-2.5">
+                <Label className="text-sm sm:text-base font-bold text-zinc-400 ml-1">Reading Stage</Label>
+                <Select value={readingStage} onValueChange={(v) => setReadingStage(v as any)}>
+                  <SelectTrigger className="bg-zinc-950/50 border-zinc-800 h-12 text-zinc-200 rounded-xl outline-none text-sm sm:text-base">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+                    {READING_STAGES.map((stage) => (
+                      <SelectItem key={stage} value={stage} className="text-sm sm:text-base">{stage}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2.5">
+                <Label htmlFor="citations" className="text-sm sm:text-base font-bold text-zinc-400 ml-1">Citation Count</Label>
+                <div className="relative group">
+                  <BarChart className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-600 group-focus-within:text-primary transition-colors" />
+                  <Input
+                    id="citations"
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                    value={citationCount}
+                    onChange={(e) => setCitationCount(e.target.value)}
+                    className="pl-12 bg-zinc-950/50 border-zinc-800 h-12 text-zinc-200 placeholder:text-zinc-700 rounded-xl text-sm sm:text-base"
                     disabled={isLoading}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose impact level" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {IMPACT_SCORES.map((score) => (
-                        <SelectItem key={score} value={score}>
-                          {score}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  />
                 </div>
               </div>
 
-              {/* Date Added */}
-              <div className="space-y-2">
-                <Label htmlFor="dateAdded" className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-primary" />
-                  Date Added
-                </Label>
-                <Input
-                  id="dateAdded"
-                  type="date"
-                  value={formData.dateAdded}
-                  max={new Date().toISOString().split('T')[0]}
-                  onChange={(e) => handleInputChange('dateAdded', e.target.value)}
-                  disabled={isLoading}
-                />
+              <div className="space-y-2.5">
+                <Label className="text-sm sm:text-base font-bold text-zinc-400 ml-1">Impact Score</Label>
+                <Select value={impactScore} onValueChange={(v) => setImpactScore(v as any)}>
+                  <SelectTrigger className="bg-zinc-950/50 border-zinc-800 h-12 text-zinc-200 rounded-xl outline-none text-sm sm:text-base">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+                    {IMPACT_SCORES.map((score) => (
+                      <SelectItem key={score} value={score} className="text-sm sm:text-base">{score}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
+            </div>
+          </div>
 
-              {/* Submit Button */}
-              <div className="flex gap-4 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => navigate('/library')}
-                  disabled={isLoading}
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className="flex-1"
-                >
-                  {isLoading ? 'Adding Paper...' : 'Add Paper'}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+          <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-zinc-800">
+            <Button
+              type="button"
+              variant="outline"
+              className="flex-1 h-12 rounded-xl text-sm sm:text-base font-bold text-zinc-500 border-zinc-800 hover:bg-zinc-800"
+              onClick={() => navigate('/library')}
+              disabled={isLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              className="flex-1 h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/10 text-sm sm:text-base"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Adding Paper...' : 'Add Paper'}
+            </Button>
+          </div>
+        </form>
       </div>
     </Layout>
   );

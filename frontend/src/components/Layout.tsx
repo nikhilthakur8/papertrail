@@ -38,7 +38,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     <div className="flex flex-col min-h-screen bg-[#0a0a0b] text-zinc-100 font-sans">
       {/* Minimal Top Header */}
       <header className="sticky top-0 left-0 right-0 h-16 border-b border-zinc-800/50 bg-[#0a0a0b]/80 backdrop-blur-md z-40">
-        <div className="mx-10 mx-auto h-full px-6 flex items-center justify-between">
+        <div className="max-w-[1600px] mx-auto h-full px-6 flex items-center justify-between">
           {/* Logo */}
           <Link to="/library" className="flex items-center gap-2 group">
             <BookOpen className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />

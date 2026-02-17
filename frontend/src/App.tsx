@@ -8,8 +8,6 @@ import SignupPage from '@/pages/SignupPage';
 import AddPaperPage from '@/pages/AddPaperPage';
 import LibraryPage from '@/pages/LibraryPage';
 import AnalyticsPage from '@/pages/AnalyticsPage';
-import GuidePage from '@/pages/GuidePage';
-import AskAwayPage from '@/pages/AskAwayPage';
 import { Analytics } from '@vercel/analytics/react';
 
 
@@ -52,22 +50,6 @@ function App() {
             element={
               <ProtectedRoute>
                 <AnalyticsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/guide"
-            element={
-              <ProtectedRoute>
-                <GuidePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/ask"
-            element={
-              <ProtectedRoute>
-                <AskAwayPage />
               </ProtectedRoute>
             }
           />

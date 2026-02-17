@@ -332,6 +332,38 @@ const AnalyticsPage: React.FC = () => {
             )}
           </CardContent>
         </Card>
+
+        <Card className="bg-zinc-900/40 border-zinc-800">
+          <CardHeader>
+            <CardTitle className="text-base">Average Citations by Domain</CardTitle>
+            <CardDescription className="text-xs">Average impact of papers across different research fields.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {analytics.domainStats.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart
+                  layout="vertical"
+                  data={analytics.domainStats}
+                  margin={{ top: 10, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#27272a" horizontal={false} />
+                  <XAxis type="number" stroke="#71717a" tick={{ fontSize: 10 }} />
+                  <YAxis 
+                    dataKey="_id" 
+                    type="category" 
+                    stroke="#71717a" 
+                    width={100} 
+                    tick={{ fontSize: 10 }} 
+                  />
+                  <Tooltip {...tooltipStyle} cursor={{ fill: '#27272a', opacity: 0.4 }} />
+                  <Bar dataKey="avgCitations" name="Avg. Citations" fill="#8b5cf6" radius={[0, 4, 4, 0]} barSize={20} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+                <div className="flex items-center justify-center h-[300px] text-zinc-700 text-xs">No data available</div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </Layout>
   );

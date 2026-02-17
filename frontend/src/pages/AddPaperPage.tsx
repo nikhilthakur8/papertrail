@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
 import Layout from '@/components/Layout';
-import { PlusCircle, User, BarChart, FileText } from 'lucide-react';
+import { PlusCircle, User, BarChart, FileText, Calendar } from 'lucide-react';
 
 const AddPaperPage: React.FC = () => {
   const [title, setTitle] = useState('');
@@ -17,6 +17,7 @@ const AddPaperPage: React.FC = () => {
   const [readingStage, setReadingStage] = useState(READING_STAGES[0]);
   const [citationCount, setCitationCount] = useState('0');
   const [impactScore, setImpactScore] = useState(IMPACT_SCORES[1]); // Medium Impact default
+  const [dateAdded, setDateAdded] = useState(new Date().toISOString().split('T')[0]);
   const [isLoading, setIsLoading] = useState(false);
   
   const navigate = useNavigate();
@@ -43,6 +44,7 @@ const AddPaperPage: React.FC = () => {
         readingStage,
         citationCount: parseInt(citationCount) || 0,
         impactScore,
+        dateAdded,
       });
       
       toast({
@@ -121,6 +123,21 @@ const AddPaperPage: React.FC = () => {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            <div className="space-y-2.5">
+                <Label htmlFor="dateAdded" className="text-sm sm:text-base font-bold text-zinc-400 ml-1">Date Added</Label>
+                <div className="relative group">
+                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-600 group-focus-within:text-primary transition-colors" />
+                  <Input
+                    id="dateAdded"
+                    type="date"
+                    value={dateAdded}
+                    onChange={(e) => setDateAdded(e.target.value)}
+                    className="pl-12 bg-zinc-950/50 border-zinc-800 h-12 text-zinc-200 placeholder:text-zinc-700 rounded-xl text-sm sm:text-base w-full [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:hidden"
+                    disabled={isLoading}
+                  />
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

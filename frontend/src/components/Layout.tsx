@@ -47,21 +47,21 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </span>
           </Link>
 
-          {/* Minimal Navigation */}
-          <nav className="hidden md:flex items-center gap-1">
+          {/* Navigation */}
+          <nav className="flex items-center gap-1 mr-4 md:mr-0">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
               return (
                 <Link key={item.path} to={item.path}>
                   <div className={cn(
-                    "flex items-center gap-2 px-4 py-2 rounded-lg transition-all text-sm font-medium",
+                    "flex items-center gap-2 px-3 py-2 md:px-4 md:py-2 rounded-lg transition-all text-sm font-medium",
                     isActive 
                       ? "text-primary bg-primary/10" 
                       : "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50"
                   )}>
-                    <Icon className="h-4 w-4" />
-                    <span>{item.label}</span>
+                    <Icon className="h-5 w-5 md:h-4 md:w-4" />
+                    <span className="hidden md:inline">{item.label}</span>
                   </div>
                 </Link>
               );

@@ -21,6 +21,7 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 import { useToast } from '@/components/ui/use-toast';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import Layout from '@/components/Layout';
 import { 
   PlusCircle, 
@@ -224,8 +225,8 @@ const LibraryPage: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-white tracking-tight">Paper Library</h1>
-            <p className="text-zinc-500 mt-0.5 text-sm sm:text-base">
+            <h1 className="text-2xl font-bold text-white tracking-tight">Paper Library</h1>
+            <p className="text-zinc-500 mt-0.5 text-xs sm:text-sm">
               Currently tracking {pagination.totalPapers} research papers.
             </p>
           </div>
@@ -341,47 +342,68 @@ const LibraryPage: React.FC = () => {
               <Table>
                 <TableHeader className="bg-zinc-900/50">
                   <TableRow className="border-zinc-800/50 hover:bg-transparent">
-                    <TableHead className="text-sm font-bold text-zinc-500 pl-6 h-12">Paper Title</TableHead>
-                    <TableHead className="text-sm font-bold text-zinc-500 h-12">Author</TableHead>
-                    <TableHead className="text-sm font-bold text-zinc-500 h-12">Domain</TableHead>
-                    <TableHead className="text-sm font-bold text-zinc-500 h-12">Stage</TableHead>
-                    <TableHead className="text-sm font-bold text-zinc-500 h-12 text-center">Citations</TableHead>
-                    <TableHead className="text-sm font-bold text-zinc-500 h-12 text-center">Impact</TableHead>
-                    <TableHead className="text-sm font-bold text-zinc-500 text-right pr-6 h-12">Actions</TableHead>
+                    <TableHead className="text-xs font-bold text-zinc-500 pl-6 h-10 w-[300px]">Paper Title</TableHead>
+                    <TableHead className="text-xs font-bold text-zinc-500 h-10 w-[150px]">Author</TableHead>
+                    <TableHead className="text-xs font-bold text-zinc-500 h-10 w-[150px]">Domain</TableHead>
+                    <TableHead className="text-xs font-bold text-zinc-500 h-10 w-[150px]">Stage</TableHead>
+                    <TableHead className="text-xs font-bold text-zinc-500 h-10 text-center w-[100px]">Citations</TableHead>
+                    <TableHead className="text-xs font-bold text-zinc-500 h-10 text-center w-[120px]">Impact</TableHead>
+                    <TableHead className="text-xs font-bold text-zinc-500 h-10 w-[120px]">Date Added</TableHead>
+                    <TableHead className="text-xs font-bold text-zinc-500 h-10 w-[120px]">Last Updated</TableHead>
+                    <TableHead className="text-xs font-bold text-zinc-500 text-right pr-6 h-10 w-[100px]">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {papers.map((paper) => (
                     <TableRow key={paper._id} className="border-zinc-800/30 group transition-colors hover:bg-transparent">
-                      <TableCell className="pl-6 py-4">
-                         <p className="text-base font-bold text-zinc-200 truncate max-w-[450px]">{paper.title}</p>
+                      <TableCell className="pl-6 py-3">
+                         <TooltipProvider>
+                           <Tooltip>
+                             <TooltipTrigger asChild>
+                               <p className="text-sm font-bold text-zinc-200 truncate max-w-[300px] cursor-default">{paper.title}</p>
+                             </TooltipTrigger>
+                             <TooltipContent className="bg-zinc-900 border-zinc-800 text-zinc-200 max-w-[400px]">
+                               <p>{paper.title}</p>
+                             </TooltipContent>
+                           </Tooltip>
+                         </TooltipProvider>
                       </TableCell>
-                      <TableCell>
-                        <span className="text-sm sm:text-base font-medium text-zinc-400">{paper.firstAuthor}</span>
+                      <TableCell className="py-3">
+                        <span className="text-xs sm:text-sm font-medium text-zinc-400 truncate block max-w-[150px]" title={paper.firstAuthor}>{paper.firstAuthor}</span>
                       </TableCell>
-                      <TableCell>
-                        <span className="text-sm sm:text-base font-medium text-zinc-500">{paper.researchDomain}</span>
+                      <TableCell className="py-3">
+                        <span className="text-xs sm:text-sm font-medium text-zinc-500 truncate block max-w-[150px]">{paper.researchDomain}</span>
                       </TableCell>
-                      <TableCell>
-                         <Badge variant="outline" className={cn("text-xs sm:text-sm font-bold py-1 px-3 rounded-full", getStageColor(paper.readingStage))}>
+                      <TableCell className="py-3">
+                         <Badge variant="outline" className={cn("text-[10px] sm:text-xs font-bold py-0.5 px-2 rounded-full whitespace-nowrap", getStageColor(paper.readingStage))}>
                            {paper.readingStage}
                          </Badge>
                       </TableCell>
-                      <TableCell className="text-center">
-                        <span className="text-sm sm:text-base font-bold text-zinc-200">{paper.citationCount}</span>
+                      <TableCell className="text-center py-3">
+                        <span className="text-xs sm:text-sm font-bold text-zinc-200">{paper.citationCount}</span>
                       </TableCell>
-                      <TableCell className="text-center">
-                         <Badge variant="outline" className={cn("text-xs sm:text-sm font-bold py-1 px-3 rounded-lg", getImpactColor(paper.impactScore))}>
+                      <TableCell className="text-center py-3">
+                         <Badge variant="outline" className={cn("text-[10px] sm:text-xs font-bold py-0.5 px-2 rounded-lg whitespace-nowrap", getImpactColor(paper.impactScore))}>
                            {paper.impactScore}
                          </Badge>
                       </TableCell>
-                      <TableCell className="text-right pr-6">
-                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button variant="ghost" size="icon" onClick={() => handleEditClick(paper)} className="h-9 w-9 text-zinc-500 hover:text-primary">
-                            <Pencil className="h-4 w-4" />
+                      <TableCell className="py-3">
+                        <span className="text-xs text-zinc-500 whitespace-nowrap">
+                          {paper.dateAdded ? new Date(paper.dateAdded).toLocaleDateString() : '-'}
+                        </span>
+                      </TableCell>
+                      <TableCell className="py-3">
+                        <span className="text-xs text-zinc-500 whitespace-nowrap">
+                          {paper.updatedAt ? new Date(paper.updatedAt).toLocaleDateString() : '-'}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right pr-6 py-3">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button variant="ghost" size="icon" onClick={() => handleEditClick(paper)} className="h-8 w-8 text-zinc-500 hover:text-primary">
+                            <Pencil className="h-3.5 w-3.5" />
                           </Button>
-                          <Button variant="ghost" size="icon" onClick={() => handleDelete(paper._id)} className="h-9 w-9 text-zinc-500 hover:text-rose-500">
-                            <Trash2 className="h-4 w-4" />
+                          <Button variant="ghost" size="icon" onClick={() => handleDelete(paper._id)} className="h-8 w-8 text-zinc-500 hover:text-rose-500">
+                            <Trash2 className="h-3.5 w-3.5" />
                           </Button>
                         </div>
                       </TableCell>

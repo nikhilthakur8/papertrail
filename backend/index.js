@@ -33,6 +33,7 @@ app.get('/api/health', (req, res) => {
 
 app.get('/status', (req, res) => {
   res.json({
+    service: 'PaperTrail API',
     status: 'ok',
     timestamp: new Date().toISOString(),
     env: process.env.NODE_ENV || 'development',

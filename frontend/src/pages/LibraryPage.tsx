@@ -377,11 +377,11 @@ const LibraryPage: React.FC = () => {
                       </TableCell>
                       <TableCell className="text-right pr-6">
                         <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button variant="ghost" size="icon" onClick={() => handleEditClick(paper)} className="h-8 w-8 text-zinc-500 hover:text-primary">
-                            <Pencil className="h-3.5 w-3.5" />
+                          <Button variant="ghost" size="icon" onClick={() => handleEditClick(paper)} className="h-9 w-9 text-zinc-500 hover:text-primary">
+                            <Pencil className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" onClick={() => handleDelete(paper._id)} className="h-8 w-8 text-zinc-500 hover:text-rose-500">
-                            <Trash2 className="h-3.5 w-3.5" />
+                          <Button variant="ghost" size="icon" onClick={() => handleDelete(paper._id)} className="h-9 w-9 text-zinc-500 hover:text-rose-500">
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>

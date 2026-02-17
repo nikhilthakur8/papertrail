@@ -106,6 +106,33 @@ const LoginPage: React.FC = () => {
               >
                 {isLoading ? 'Signing in...' : 'Sign In'}
               </Button>
+              
+              <div className="w-full pt-4 border-t border-border mt-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Demo Credentials</p>
+                <div className="bg-muted/50 p-3 rounded-md text-sm space-y-1">
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Email:</span>
+                    <code className="font-mono text-primary">test@papertrail.com</code>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Pass:</span>
+                    <code className="font-mono text-primary">password123</code>
+                  </div>
+                  <Button 
+                    type="button" 
+                    variant="link" 
+                    size="sm" 
+                    className="w-full h-auto p-0 text-xs mt-2"
+                    onClick={() => {
+                      setEmail('test@papertrail.com');
+                      setPassword('password123');
+                    }}
+                  >
+                    Quick Auto-fill
+                  </Button>
+                </div>
+              </div>
+
               <p className="text-sm text-muted-foreground text-center">
                 Don't have an account?{' '}
                 <Link to="/signup" className="text-primary hover:underline">

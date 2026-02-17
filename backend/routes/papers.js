@@ -11,12 +11,12 @@ router.use(authMiddleware);
 router.post('/', async (req, res) => {
   try {
     const { title, firstAuthor, researchDomain, readingStage, citationCount, impactScore, dateAdded } = req.body;
-    
+
     // Validation
     if (!title || !firstAuthor || !researchDomain || !readingStage || citationCount === undefined || !impactScore) {
       return res.status(400).json({ message: 'All fields are required' });
     }
-    
+
     const paper = new Paper({
       user: req.user._id,
       title,
@@ -27,9 +27,9 @@ router.post('/', async (req, res) => {
       impactScore,
       dateAdded: dateAdded || new Date(),
     });
-    
+
     await paper.save();
-    
+
     res.status(201).json({
       message: 'Paper added successfully',
       paper,
@@ -44,36 +44,36 @@ router.post('/', async (req, res) => {
 router.get('/', async (req, res) => {
   try {
     const query = { user: req.user._id };
-    
+
     // Apply filters if provided
     const { readingStage, researchDomain, impactScore, dateFilter, page = 1, limit = 10 } = req.query;
-    
+
     // Parse pagination params
     const pageNum = parseInt(page) || 1;
     const limitNum = parseInt(limit) || 10;
     const skip = (pageNum - 1) * limitNum;
-    
+
     // Multi-select filters (comma-separated values)
     if (readingStage) {
       const stages = readingStage.split(',');
       query.readingStage = { $in: stages };
     }
-    
+
     if (researchDomain) {
       const domains = researchDomain.split(',');
       query.researchDomain = { $in: domains };
     }
-    
+
     if (impactScore) {
       const scores = impactScore.split(',');
       query.impactScore = { $in: scores };
     }
-    
+
     // Date filter
     if (dateFilter) {
       const now = new Date();
       let startDate;
-      
+
       switch (dateFilter) {
         case 'this_week':
           startDate = new Date(now.setDate(now.getDate() - 7));
@@ -88,23 +88,23 @@ router.get('/', async (req, res) => {
         default:
           startDate = null;
       }
-      
+
       if (startDate) {
         query.dateAdded = { $gte: startDate };
       }
     }
-    
+
     // Get total count for pagination
     const totalPapers = await Paper.countDocuments(query);
     const totalPages = Math.ceil(totalPapers / limitNum);
-    
+
     // Get paginated papers
     const papers = await Paper.find(query)
       .sort({ dateAdded: -1 })
       .skip(skip)
       .limit(limitNum);
-    
-    res.json({ 
+
+    res.json({
       papers,
       pagination: {
         currentPage: pageNum,
@@ -125,7 +125,7 @@ router.get('/', async (req, res) => {
 router.get('/filters', async (req, res) => {
   try {
     const userId = req.user._id;
-    
+
     // Get counts for each filter option
     const [stageCounts, domainCounts, impactCounts] = await Promise.all([
       Paper.aggregate([
@@ -141,7 +141,7 @@ router.get('/filters', async (req, res) => {
         { $group: { _id: '$impactScore', count: { $sum: 1 } } },
       ]),
     ]);
-    
+
     res.json({
       readingStages: stageCounts,
       researchDomains: domainCounts,
@@ -157,18 +157,18 @@ router.get('/filters', async (req, res) => {
 router.get('/analytics', async (req, res) => {
   try {
     const userId = req.user._id;
-    
+
     // Funnel data - papers by reading stage
     const funnelData = await Paper.aggregate([
       { $match: { user: userId } },
       { $group: { _id: '$readingStage', count: { $sum: 1 } } },
     ]);
-    
+
     // Scatter plot data - papers with citation count grouped by impact score
     const scatterData = await Paper.find({ user: userId })
       .select('title citationCount impactScore')
       .lean();
-    
+
     // Stacked bar chart data - reading stage distribution by domain
     const stackedBarData = await Paper.aggregate([
       { $match: { user: userId } },
@@ -179,7 +179,7 @@ router.get('/analytics', async (req, res) => {
         },
       },
     ]);
-    
+
     // Papers added over time (for line chart) - grouped by month
     const papersOverTime = await Paper.aggregate([
       { $match: { user: userId } },
@@ -195,7 +195,7 @@ router.get('/analytics', async (req, res) => {
       },
       { $sort: { '_id.year': 1, '_id.month': 1 } },
     ]);
-    
+
     // Top authors - papers by first author
     const topAuthors = await Paper.aggregate([
       { $match: { user: userId } },
@@ -210,7 +210,7 @@ router.get('/analytics', async (req, res) => {
       { $sort: { paperCount: -1 } },
       { $limit: 10 },
     ]);
-    
+
     // Impact score distribution
     const impactDistribution = await Paper.aggregate([
       { $match: { user: userId } },
@@ -222,7 +222,7 @@ router.get('/analytics', async (req, res) => {
         },
       },
     ]);
-    
+
     // Domain comparison - radar chart data
     const domainStats = await Paper.aggregate([
       { $match: { user: userId } },
@@ -243,7 +243,7 @@ router.get('/analytics', async (req, res) => {
         },
       },
     ]);
-    
+
     // Reading activity by day of week
     const activityByDay = await Paper.aggregate([
       { $match: { user: userId } },
@@ -255,14 +255,14 @@ router.get('/analytics', async (req, res) => {
       },
       { $sort: { _id: 1 } },
     ]);
-    
+
     // Summary statistics
     const totalPapers = await Paper.countDocuments({ user: userId });
-    const fullyReadPapers = await Paper.countDocuments({ 
-      user: userId, 
+    const fullyReadPapers = await Paper.countDocuments({
+      user: userId,
       readingStage: { $in: ['Fully Read', 'Notes Completed'] }
     });
-    
+
     const avgCitationsByDomain = await Paper.aggregate([
       { $match: { user: userId } },
       {
@@ -273,11 +273,11 @@ router.get('/analytics', async (req, res) => {
         },
       },
     ]);
-    
-    const completionRate = totalPapers > 0 
-      ? ((fullyReadPapers / totalPapers) * 100).toFixed(1) 
+
+    const completionRate = totalPapers > 0
+      ? ((fullyReadPapers / totalPapers) * 100).toFixed(1)
       : 0;
-    
+
     // Total and average citations
     const citationStats = await Paper.aggregate([
       { $match: { user: userId } },
@@ -290,7 +290,7 @@ router.get('/analytics', async (req, res) => {
         },
       },
     ]);
-    
+
     res.json({
       funnel: funnelData,
       scatter: scatterData,
@@ -318,22 +318,22 @@ router.get('/analytics', async (req, res) => {
 router.patch('/:id', async (req, res) => {
   try {
     const paper = await Paper.findOne({ _id: req.params.id, user: req.user._id });
-    
+
     if (!paper) {
       return res.status(404).json({ message: 'Paper not found' });
     }
-    
+
     const { title, firstAuthor, researchDomain, readingStage, citationCount, impactScore } = req.body;
-    
+
     if (title) paper.title = title;
     if (firstAuthor) paper.firstAuthor = firstAuthor;
     if (researchDomain) paper.researchDomain = researchDomain;
     if (readingStage) paper.readingStage = readingStage;
     if (citationCount !== undefined) paper.citationCount = parseInt(citationCount);
     if (impactScore) paper.impactScore = impactScore;
-    
+
     await paper.save();
-    
+
     res.json({ message: 'Paper updated successfully', paper });
   } catch (error) {
     console.error('Update paper error:', error);
@@ -345,11 +345,11 @@ router.patch('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const paper = await Paper.findOneAndDelete({ _id: req.params.id, user: req.user._id });
-    
+
     if (!paper) {
       return res.status(404).json({ message: 'Paper not found' });
     }
-    
+
     res.json({ message: 'Paper deleted successfully' });
   } catch (error) {
     console.error('Delete paper error:', error);
@@ -407,8 +407,6 @@ router.post('/seed', async (req, res) => {
       { title: 'Graph Theory Applications in Social Network Analysis', domain: 'Mathematics' },
       // Social Sciences
       { title: 'Impact of Social Media on Political Polarization', domain: 'Social Sciences' },
-      { title: 'Economic Effects of Universal Basic Income: A Meta-Analysis', domain: 'Social Sciences' },
-      { title: 'Remote Work and Productivity: A Post-Pandemic Assessment', domain: 'Social Sciences' },
     ];
 
     // Generate a random date within the last 6 months
